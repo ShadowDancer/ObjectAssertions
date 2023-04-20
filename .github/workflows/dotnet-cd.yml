@@ -1,0 +1,30 @@
+name: .NET CD
+
+on:
+  push:
+    tags:
+      - 'r/*.*.*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+    - name: Set env
+      run: echo "RELEASE_VERSION=$(echo ${GITHUB_REF:12})" >> $GITHUB_ENV
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release -p:Version=$RELEASE_VERSION --no-restore
+    - name: Create the package
+      run: dotnet pack --configuration Release -p:Version=$RELEASE_VERSION --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
+    - name: Create the package
+      run: dotnet pack --configuration Release -p:Version=$RELEASE_VERSION --no-build --no-restore src/ObjectAssertions.Abstractions/ObjectAssertions.Abstractions.csproj
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ObjectAssertions
+        path: |
+          src/ObjectAssertions/bin/Release/*.nupkg
+          src/ObjectAssertions.Abstractions/bin/Release/*.nupkg
+        if-no-files-found: error
