@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+	<IsRoslynComponent>true</IsRoslynComponent>
+	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<LangVersion>9</LangVersion>
+  </PropertyGroup>
+	<PropertyGroup>
+		<Version>0.0.0-preview1</Version>
+		<PackageId>ObjectAssertions</PackageId>
+		<Authors>Przemysław Onak</Authors>
+		<PackageProjectUrl>https://github.com/ShadowDancer/ObjectAssertions</PackageProjectUrl>
+		<Description>
+			Contains Source Generator which automatically generates classes that ensure all properties of the object are asserted.
+			This is developement only dependedency, which is not compiled into your program.
+		</Description>
+	</PropertyGroup>
+	<PropertyGroup>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Title>Object Assertions</Title>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Include="..\ObjectAssertions.Abstractions\IAssertsAllPropertiesOf.cs" Link="IAssertsAllPropertiesOf.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="" />
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+
+</Project>
