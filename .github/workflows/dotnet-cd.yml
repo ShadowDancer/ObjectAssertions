@@ -1,0 +1,28 @@
+name: .NET
+
+on:
+  push:
+    tags:
+      - 'r/*.*.*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+    - name: Set env
+      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:12})
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore /p:Version=$RELEASE_VERSION
+    - name: Create the package
+      run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
+    - name: Create the package
+      run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions.Abstractions/ObjectAssertions.Abstractions.csproj
+    - name: Nuget push
+      run: dotnet nuget push */bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+
