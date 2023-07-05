@@ -61,6 +61,7 @@ namespace ObjectAssertions.Generator
                                     .AddMembers(constructor)
                                     .AddMembers(GenerateFields())
                                     .AddMembers(GenerateAssertMethod())
+                                    .AddMembers(GenerateCollectAssertionsMethod())
                 ;
 
                 classDeclaration = classDeclaration.NormalizeWhitespace();
@@ -91,6 +92,12 @@ namespace ObjectAssertions.Generator
         private MethodDeclarationSyntax GenerateAssertMethod()
         {
             return MemberGenerator.GenerateAssertMethod(_semanticModel, "Assert", _configuration.AssertionFieldName, _configuration.Members.Select(n => n.Name));
+        }
+
+        private MethodDeclarationSyntax GenerateCollectAssertionsMethod()
+        {
+            return MemberGenerator.GenerateCollectAssertionsMethod(_semanticModel, "CollectAssertions", _configuration.AssertionFieldName, _configuration.Members.Select(n => n.Name).ToList());
+
         }
 
         private void GenerateNamespace(IndentedTextWriter sourceWriter)

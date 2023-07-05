@@ -1,4 +1,6 @@
-﻿namespace ObjectAssertions.Abstractions
+﻿using System;
+
+namespace ObjectAssertions.Abstractions
 {
     /// <summary>
     /// This is marker interface used to designate type for which assertions will be generated.

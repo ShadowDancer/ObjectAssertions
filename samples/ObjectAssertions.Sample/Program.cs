@@ -52,7 +52,7 @@ namespace ObjectAssertions.Sample
                 StringValue = s => Assert.Equal("Hello world", s),
                 NestedObjectValue = n => new NestedObjectAssertions(n)
                 {
-                    NestedInt = ni => Assert.True(ni > 0),
+                    NestedInt = ObjectAssertionsHelpers.Ignore<int>("Out of test scope"),
                     NestedString = ns => Assert.Equal("ubuaa", ns)
                 }.Assert()
             };
