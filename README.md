@@ -18,7 +18,6 @@ public class MyClass
 }
 ```
 
-
 Add package:
 
 ```bash
@@ -49,6 +48,7 @@ public void TestMyClass()
         MyInt = i => Assert.Equal(5, i),        
         MyString = s => Assert.Equal("Hello", s),
         MyBool = b => Assert.Equal(true, b),
+        IgnoredProperty = ObjectAssertionsHelpers.Ignore<Foo>("Not in test scope"")
     };
 
     assertions.Assert();

@@ -64,10 +64,29 @@ namespace ObjectAssertions.Generator
 
         internal static MethodDeclarationSyntax GenerateAssertMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IEnumerable<string> members)
         {
-            var statmentes = members.Select(n => SyntaxFactory.ParseStatement(n + "(" + assertionFieldName + "." + n + ");    "));
+            var statmentes = members.Select(n => SyntaxFactory.ParseStatement(n + "(" + assertionFieldName + "." + n + ");"));
             return SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseName("void"), methodName)
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
                 .WithBody(SyntaxFactory.Block(statmentes));
+        }
+
+        internal static MethodDeclarationSyntax GenerateCollectAssertionsMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IReadOnlyCollection<string> members)
+        {
+            var memberExpressions = members.Select(n => SyntaxFactory.ParseExpression("() => " + n + "(" + assertionFieldName + "." + n + ")"));
+
+            var arrayOfActionType = SyntaxFactory.ArrayType(SyntaxFactory.ParseName("System.Action[]"));
+            var commas = Enumerable.Repeat(SyntaxFactory.Token(SyntaxKind.CommaToken), members.Count - 1);
+
+            var arrayInitializationSyntax = SyntaxFactory
+                .ArrayCreationExpression(SyntaxFactory.Token(SyntaxKind.NewKeyword), arrayOfActionType, SyntaxFactory
+                    .InitializerExpression(SyntaxKind.ArrayInitializerExpression)
+                    .WithExpressions(SyntaxFactory.SeparatedList(memberExpressions, commas)));
+
+            var returnArraySyntax = SyntaxFactory.ReturnStatement(arrayInitializationSyntax);
+
+            return SyntaxFactory.MethodDeclaration(arrayOfActionType, methodName)
+                .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
+                .WithBody(SyntaxFactory.Block(returnArraySyntax));
         }
     }
 }
