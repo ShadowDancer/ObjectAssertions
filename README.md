@@ -54,3 +54,58 @@ public void TestMyClass()
     assertions.Assert();
 }
 ```
+
+All delegates passed to object initializer will be invoked within `.Assert()` call. 
+You can use `ObjectAssertionsHelpers.Ignore<T>(string reason)` method to ignore certain assertions and express intent.
+
+## Assertion library integrations
+
+### FluentAssertions
+
+Use `AssertionScope` class:
+
+```
+using (new AssertionScope())
+{
+    new MyClassAssertions(myClass)
+    {
+        MyInt = i => i.Should().Be(5),        
+        MyString = s => s.Should().Be("Hello"),
+        MyBool = b => Should().Be(true),
+        IgnoredProperty = ObjectAssertionsHelpers.Ignore<Foo>("Not in test scope"")
+    }.Assert();
+}
+```
+
+### NUnit
+
+Use `Assert.Multiple` method:
+
+```
+Assert.Multiple(() =>
+{
+    new MyClassAssertions(myClass)
+    {
+        MyInt = i => Assert.AreEqual(5, i),        
+        MyString = s => Assert.AreEqual("Hello", s),
+        MyBool = b => Assert.AreEqual(true, b),
+        IgnoredProperty = ObjectAssertionsHelpers.Ignore<Foo>("Not in test scope"")
+    }.Assert();
+}
+```
+
+### Shoudly
+
+Use ShouldSatisfyAllConditions extension method:
+
+```
+var assertions = new MyClassAssertions(myClass)
+{
+    MyInt = i => i.ShouldBe(5),        
+    MyString = s => s.ShouldBe("Hello"),
+    MyBool = b => ShouldBe(true),
+    IgnoredProperty = ObjectAssertionsHelpers.Ignore<Foo>("Not in test scope"")
+}.CollectAssertions();
+
+myClass.ShouldSatisfyAllConditions(assertions);
+```
