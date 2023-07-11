@@ -10,6 +10,16 @@ namespace ObjectAssertions.Abstractions
     /// <typeparam name="TObject"></typeparam>
     public interface IAssertsAllPropertiesOf<TObject>
     {
+        /// <summary>
+        /// Run all assertions. This method will execute all delegates passed to object initializer, one by one.
+        /// </summary>
+        public void Assert();
 
+        /// <summary>
+        /// Return all assertion delegates. 
+        /// This method will collect all delegates passed to object initializer, and return them as array (without executing them).
+        /// It will return delegate without param, as correct property will be already setup inside delegate. Executing delegate will execute assertion.
+        /// </summary>
+        public System.Action [] CollectAssertions();
     }
 }
