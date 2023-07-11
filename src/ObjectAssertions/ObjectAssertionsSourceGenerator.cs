@@ -9,7 +9,7 @@ namespace ObjectAssertions
         public void Execute(GeneratorExecutionContext context)
         {
 #if DEBUG
-            Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
 #endif
             new GenerationOrchestrator(context).Generate();
         }
