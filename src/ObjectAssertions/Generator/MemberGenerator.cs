@@ -32,7 +32,7 @@ namespace ObjectAssertions.Generator
 
         internal static MemberDeclarationSyntax GenerateFromProperty(SemanticModel semanticModel, IPropertySymbol propertySymbol)
         {
-            return GenerateProperty(semanticModel, (INamedTypeSymbol)propertySymbol.Type, propertySymbol.Name);
+            return GenerateProperty(semanticModel, propertySymbol.Type, propertySymbol.Name);
         }
 
         internal static MemberDeclarationSyntax GenerateBackingField(SemanticModel semanticModel, INamedTypeSymbol propertyType, string name)
@@ -47,7 +47,7 @@ namespace ObjectAssertions.Generator
         }
 
 
-        private static MemberDeclarationSyntax GenerateProperty(SemanticModel semanticModel, INamedTypeSymbol propertyType, string name)
+        private static MemberDeclarationSyntax GenerateProperty(SemanticModel semanticModel, ITypeSymbol propertyType, string name)
         {
             var action = semanticModel.Compilation.GetTypeByMetadataName("System.Action`1");
 
