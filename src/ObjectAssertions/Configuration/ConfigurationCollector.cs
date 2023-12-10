@@ -31,7 +31,7 @@ namespace ObjectAssertions.Configuration
         {
             var assertedType = (INamedTypeSymbol)_assertAllPropertiesOfInterface.TypeArguments[0];
 
-            var publicMembers = assertedType.GetMembers().Where(n => n.DeclaredAccessibility == Accessibility.Public);
+            var publicMembers = assertedType.GetBaseTypesAndThis().SelectMany(n => n.GetMembers()).Where(n => n.DeclaredAccessibility == Accessibility.Public);
 
             var properties = publicMembers.OfType<IPropertySymbol>();
 
@@ -52,7 +52,5 @@ namespace ObjectAssertions.Configuration
 
             return new ObjectAssertionsConfiguration(_assertionClassDeclaration, assertedType, assertionFieldName, members.ToImmutableArray());
         }
-
-
     }
 }

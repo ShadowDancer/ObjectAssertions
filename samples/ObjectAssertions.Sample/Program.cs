@@ -4,8 +4,13 @@ using static ObjectAssertions.Sample.ObjectToAssert;
 
 namespace ObjectAssertions.Sample
 {
+    public record Base
+    {
+        public string[]? BaseProperty { get; set; } = null;
+    }
+
     // This is data model in your program
-    public record ObjectToAssert
+    public record ObjectToAssert : Base
     {
         public int IntegerNumber { get; set; } = 30;
         public double DoubleNumber { get; set; } = 42d;
@@ -44,6 +49,7 @@ namespace ObjectAssertions.Sample
 
             var assertions = new ObjectAssertions(testObject)
             {
+                BaseProperty = Assert.Null,
                 BooleanValue = Assert.True,
                 CharacterValue = c => Assert.Equal('z', c),
                 DoubleNumber = d => Assert.Equal(42, d, 2),
