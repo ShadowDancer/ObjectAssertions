@@ -23,9 +23,6 @@ namespace ObjectAssertions.Sample
         public int? NullableNumber { get; set; } = 5;
         public NestedObject NestedObjectValue { get; set; } = new NestedObject();
 
-        [Obsolete]
-        public string ObsoleteValue { get; set; } = "I'm obsolete";
-
 
         public enum ExampleEnum { Option1, Option2, Option3 };
         public record NestedObject(int NestedInt = 5, string NestedString = "ubuaa");
@@ -62,7 +59,6 @@ namespace ObjectAssertions.Sample
                 IntegerNumber = i => Assert.Equal(30, i),
                 NullableNumber = n => Assert.Equal(5, n),
                 StringValue = s => Assert.Equal("Hello world", s),
-                ObsoleteValue = o => Assert.Equal("I'm obsolete", o), // Obsolete warnings are ignored in generated code
                 NestedObjectValue = n => new NestedObjectAssertions(n)
                 {
                     NestedInt = ObjectAssertionsHelpers.Ignore<int>("Out of test scope"),
