@@ -5,6 +5,7 @@ using System;
 using ObjectAssertions.Generator.Utils;
 using System.Linq;
 using System.Collections.Generic;
+using ObjectAssertions.Configuration;
 
 namespace ObjectAssertions.Generator
 {
@@ -27,12 +28,30 @@ namespace ObjectAssertions.Generator
 
         internal static MemberDeclarationSyntax GenerateFromField(SemanticModel semanticModel, IFieldSymbol fieldSymbol)
         {
-            return GenerateProperty(semanticModel, (INamedTypeSymbol)fieldSymbol.Type, fieldSymbol.Name);
+            bool isObsolete = ObsoleteMemberHandler.IsObsolete(fieldSymbol, out string obsoleteMessage);
+            var property = GenerateProperty(semanticModel, (INamedTypeSymbol)fieldSymbol.Type, fieldSymbol.Name);
+            
+            if (isObsolete)
+            {
+                var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(obsoleteMessage);
+                return property.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
+            }
+            
+            return property;
         }
 
         internal static MemberDeclarationSyntax GenerateFromProperty(SemanticModel semanticModel, IPropertySymbol propertySymbol)
         {
-            return GenerateProperty(semanticModel, propertySymbol.Type, propertySymbol.Name);
+            bool isObsolete = ObsoleteMemberHandler.IsObsolete(propertySymbol, out string obsoleteMessage);
+            var property = GenerateProperty(semanticModel, propertySymbol.Type, propertySymbol.Name);
+            
+            if (isObsolete)
+            {
+                var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(obsoleteMessage);
+                return property.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
+            }
+            
+            return property;
         }
 
         internal static MemberDeclarationSyntax GenerateBackingField(SemanticModel semanticModel, INamedTypeSymbol propertyType, string name)
@@ -62,17 +81,17 @@ namespace ObjectAssertions.Generator
             })));
         }
 
-        internal static MethodDeclarationSyntax GenerateAssertMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IEnumerable<string> members)
+        internal static MethodDeclarationSyntax GenerateAssertMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IEnumerable<MemberInfo> members)
         {
-            var statmentes = members.Select(n => SyntaxFactory.ParseStatement(n + "(" + assertionFieldName + "." + n + ");"));
+            var statements = members.Select(m => SyntaxFactory.ParseStatement(m.Symbol.Name + "(" + assertionFieldName + "." + m.Symbol.Name + ");"));
             return SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseName("void"), methodName)
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
-                .WithBody(SyntaxFactory.Block(statmentes));
+                .WithBody(SyntaxFactory.Block(statements));
         }
 
-        internal static MethodDeclarationSyntax GenerateCollectAssertionsMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IReadOnlyCollection<string> members)
+        internal static MethodDeclarationSyntax GenerateCollectAssertionsMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IReadOnlyCollection<MemberInfo> members)
         {
-            var memberExpressions = members.Select(n => SyntaxFactory.ParseExpression("() => " + n + "(" + assertionFieldName + "." + n + ")"));
+            var memberExpressions = members.Select(m => SyntaxFactory.ParseExpression("() => " + m.Symbol.Name + "(" + assertionFieldName + "." + m.Symbol.Name + ")"));
 
             var arrayOfActionType = SyntaxFactory.ArrayType(SyntaxFactory.ParseName("System.Action[]"));
             var commas = Enumerable.Repeat(SyntaxFactory.Token(SyntaxKind.CommaToken), members.Count - 1);
@@ -87,6 +106,36 @@ namespace ObjectAssertions.Generator
             return SyntaxFactory.MethodDeclaration(arrayOfActionType, methodName)
                 .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
                 .WithBody(SyntaxFactory.Block(returnArraySyntax));
+        }
+
+        internal static MemberDeclarationSyntax GenerateFromMemberInfo(SemanticModel semanticModel, MemberInfo memberInfo)
+        {
+            var symbol = memberInfo.Symbol;
+            MemberDeclarationSyntax property;
+            
+            if (symbol is IFieldSymbol fieldSymbol)
+            {
+                property = GenerateProperty(semanticModel, (INamedTypeSymbol)fieldSymbol.Type, fieldSymbol.Name);
+            }
+            else if (symbol is IPropertySymbol propertySymbol)
+            {
+                property = GenerateProperty(semanticModel, propertySymbol.Type, propertySymbol.Name);
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported symbol type: {symbol.GetType().Name}");
+            }
+            
+            if (memberInfo.ObsoleteInfo != null)
+            {
+                var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(
+                    memberInfo.ObsoleteInfo.Message);
+                
+                return property.AddAttributeLists(
+                    SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
+            }
+            
+            return property;
         }
     }
 }

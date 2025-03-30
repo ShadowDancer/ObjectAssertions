@@ -1,13 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ObjectAssertions.Configuration;
+using ObjectAssertions.Generator.Utils;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using ObjectAssertions.Configuration;
-using ObjectAssertions.Generator.Utils;
 
 namespace ObjectAssertions.Generator
 {
@@ -56,6 +56,8 @@ namespace ObjectAssertions.Generator
                 var classDeclaration = SyntaxFactory.ClassDeclaration(_typeSymbol.Name);
                 classDeclaration = classDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
 
+                classDeclaration = AddObsoleteAttributeIfNeeded(classDeclaration);
+
                 ConstructorDeclarationSyntax constructor = MemberGenerator.GenerateConstructor(_semanticModel, _configuration.AssertionClassName, _configuration.AssertedType, _configuration.AssertionFieldName);
                 classDeclaration = classDeclaration
                                     .AddMembers(constructor)
@@ -97,13 +99,12 @@ namespace ObjectAssertions.Generator
 
         private MethodDeclarationSyntax GenerateAssertMethod()
         {
-            return MemberGenerator.GenerateAssertMethod(_semanticModel, "Assert", _configuration.AssertionFieldName, _configuration.Members.Select(n => n.Name));
+            return MemberGenerator.GenerateAssertMethod(_semanticModel, "Assert", _configuration.AssertionFieldName, _configuration.Members);
         }
 
         private MethodDeclarationSyntax GenerateCollectAssertionsMethod()
         {
-            return MemberGenerator.GenerateCollectAssertionsMethod(_semanticModel, "CollectAssertions", _configuration.AssertionFieldName, _configuration.Members.Select(n => n.Name).ToList());
-
+            return MemberGenerator.GenerateCollectAssertionsMethod(_semanticModel, "CollectAssertions", _configuration.AssertionFieldName, _configuration.Members.ToList());
         }
 
         private void GenerateNamespace(IndentedTextWriter sourceWriter)
@@ -131,29 +132,32 @@ namespace ObjectAssertions.Generator
 
         private MemberDeclarationSyntax[] GenerateFields()
         {
-
-
             List<MemberDeclarationSyntax> members = new List<MemberDeclarationSyntax>()
             {
                 MemberGenerator.GenerateBackingField(_semanticModel, _configuration.AssertedType, _configuration.AssertionFieldName)
             };
-            foreach (var field in _configuration.Members)
+            
+            foreach (var memberInfo in _configuration.Members)
             {
-                switch (field)
-                {
-                    case IPropertySymbol propertySymbol:
-                        members.Add(MemberGenerator.GenerateFromProperty(_semanticModel, propertySymbol));
-                        break;
-                    case IFieldSymbol fieldSymbol:
-                        members.Add(MemberGenerator.GenerateFromField(_semanticModel, fieldSymbol));
-                        break;
-
-                    default:
-                        break;
-                }
+                members.Add(MemberGenerator.GenerateFromMemberInfo(_semanticModel, memberInfo));
             }
 
             return members.ToArray();
+        }
+
+        private ClassDeclarationSyntax AddObsoleteAttributeIfNeeded(ClassDeclarationSyntax classDeclaration)
+        {
+            var obsoleteMember = _configuration.Members.FirstOrDefault(m => m.ObsoleteInfo != null);
+            if (obsoleteMember != null)
+            {
+                string message = $"One of the asserted {obsoleteMember.Symbol.Name}'s members is obsolete";
+                
+                var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(message);
+                return classDeclaration.AddAttributeLists(
+                    SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
+            }
+
+            return classDeclaration;
         }
     }
 

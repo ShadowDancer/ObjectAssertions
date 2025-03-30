@@ -38,8 +38,7 @@ namespace ObjectAssertions.Generator
             foreach ((string className, string source) in generatedSource) _context.AddSource(className, source);
         }
 
-        private (string className, string source)? TryGenerateAssertions(Compilation compilation,
-            TypeDeclarationSyntax classDeclaration)
+        private (string className, string source)? TryGenerateAssertions(Compilation compilation, TypeDeclarationSyntax classDeclaration)
         {
             var semanticModel = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
 
