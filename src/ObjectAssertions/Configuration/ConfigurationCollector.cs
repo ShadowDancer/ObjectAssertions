@@ -39,9 +39,22 @@ namespace ObjectAssertions.Configuration
                 .Where(n => n.AssociatedSymbol == null && n.DeclaredAccessibility == Accessibility.Public)
                 .ToList();
 
+            bool memberFilter(ISymbol symbol)
+            {
+                if (symbol.IsAbstract)
+                {
+                    // We do not supprot abstract classes due to complexity of handling them
+                    // We could have a feature to assert abstract members, but then abstract class can override member and it's hard to detect which is top level
+                    // If abstract classes are not supported, we can just exclude all abstract properties
+                    return false;
+                }
+                return true;
+            }
+
+
             var members = new List<ISymbol>();
-            members.AddRange(properties);
-            members.AddRange(fields);
+            members.AddRange(properties.Where(memberFilter));
+            members.AddRange(fields.Where(memberFilter));
 
             string assertionFieldName = "_objectToAssert";
 

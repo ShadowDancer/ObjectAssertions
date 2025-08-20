@@ -117,6 +117,15 @@ namespace ObjectAssertions.Generator
                 return null;
             }
 
+            if (namedTypeSymbol.IsAbstract)
+            {
+                var abstractClassDiagnostic =
+                    Diagnostic.Create(Diagnostics.AbstractClassesAreNotSupported, classDeclaration.GetLocation(), classDeclaration.Identifier.Text);
+                _context.ReportDiagnostic(abstractClassDiagnostic);
+                return null;
+            }
+            
+
             var isPartial = classDeclaration.Modifiers.Any(n => n.IsKeyword() && n.ToString() == "partial");
             if (!isPartial)
             {

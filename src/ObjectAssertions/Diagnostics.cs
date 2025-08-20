@@ -46,6 +46,12 @@ namespace ObjectAssertions
             DiagnosticSeverity.Error,
             true);
 
-
+        public static readonly DiagnosticDescriptor AbstractClassesAreNotSupported = new(
+            "OBJASS0006",
+            "Unsupported type",
+            "Argument of " + typeof(IAssertsAllPropertiesOf<>).Name + " in abstract class. Library does not support abstract classes, use concrete type instead.",
+            "Object Assertions",
+            DiagnosticSeverity.Error,
+            true);
     }
 }

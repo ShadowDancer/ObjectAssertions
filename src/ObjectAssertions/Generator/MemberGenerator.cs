@@ -30,13 +30,13 @@ namespace ObjectAssertions.Generator
         {
             bool isObsolete = ObsoleteMemberHandler.IsObsolete(fieldSymbol, out string obsoleteMessage);
             var property = GenerateProperty(semanticModel, (INamedTypeSymbol)fieldSymbol.Type, fieldSymbol.Name);
-            
+
             if (isObsolete)
             {
                 var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(obsoleteMessage);
                 return property.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
             }
-            
+
             return property;
         }
 
@@ -44,13 +44,13 @@ namespace ObjectAssertions.Generator
         {
             bool isObsolete = ObsoleteMemberHandler.IsObsolete(propertySymbol, out string obsoleteMessage);
             var property = GenerateProperty(semanticModel, propertySymbol.Type, propertySymbol.Name);
-            
+
             if (isObsolete)
             {
                 var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(obsoleteMessage);
                 return property.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
             }
-            
+
             return property;
         }
 
@@ -91,15 +91,21 @@ namespace ObjectAssertions.Generator
 
         internal static MethodDeclarationSyntax GenerateCollectAssertionsMethod(SemanticModel semanticModel, string methodName, string assertionFieldName, IReadOnlyCollection<MemberInfo> members)
         {
-            var memberExpressions = members.Select(m => SyntaxFactory.ParseExpression("() => " + m.Symbol.Name + "(" + assertionFieldName + "." + m.Symbol.Name + ")"));
-
             var arrayOfActionType = SyntaxFactory.ArrayType(SyntaxFactory.ParseName("System.Action[]"));
-            var commas = Enumerable.Repeat(SyntaxFactory.Token(SyntaxKind.CommaToken), members.Count - 1);
+
+            var initializer = SyntaxFactory
+                        .InitializerExpression(SyntaxKind.ArrayInitializerExpression);
+
+            if (members.Count > 0)
+            {
+                var memberExpressions = members.Select(m => SyntaxFactory.ParseExpression("() => " + m.Symbol.Name + "(" + assertionFieldName + "." + m.Symbol.Name + ")"));
+                var commas = Enumerable.Repeat(SyntaxFactory.Token(SyntaxKind.CommaToken), members.Count - 1);
+                initializer = initializer
+                    .WithExpressions(SyntaxFactory.SeparatedList(memberExpressions, commas));
+            }
 
             var arrayInitializationSyntax = SyntaxFactory
-                .ArrayCreationExpression(SyntaxFactory.Token(SyntaxKind.NewKeyword), arrayOfActionType, SyntaxFactory
-                    .InitializerExpression(SyntaxKind.ArrayInitializerExpression)
-                    .WithExpressions(SyntaxFactory.SeparatedList(memberExpressions, commas)));
+                .ArrayCreationExpression(SyntaxFactory.Token(SyntaxKind.NewKeyword), arrayOfActionType, initializer);
 
             var returnArraySyntax = SyntaxFactory.ReturnStatement(arrayInitializationSyntax);
 
@@ -112,7 +118,7 @@ namespace ObjectAssertions.Generator
         {
             var symbol = memberInfo.Symbol;
             MemberDeclarationSyntax property;
-            
+
             if (symbol is IFieldSymbol fieldSymbol)
             {
                 property = GenerateProperty(semanticModel, (INamedTypeSymbol)fieldSymbol.Type, fieldSymbol.Name);
@@ -125,16 +131,16 @@ namespace ObjectAssertions.Generator
             {
                 throw new NotSupportedException($"Unsupported symbol type: {symbol.GetType().Name}");
             }
-            
+
             if (memberInfo.ObsoleteInfo != null)
             {
                 var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(
                     memberInfo.ObsoleteInfo.Message);
-                
+
                 return property.AddAttributeLists(
                     SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
             }
-            
+
             return property;
         }
     }
