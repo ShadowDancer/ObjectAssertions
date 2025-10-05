@@ -32,8 +32,8 @@ namespace ObjectAssertions
 
         public static readonly DiagnosticDescriptor MultipleInterfaceDeclarations = new(
             "OBJASS0004",
-            "Multiple interface decalrations",
-            "{0} can implement " + typeof(IAssertsAllPropertiesOf<>).Name + " only once.",
+            "Multiple interface declarations",
+            "{0} can implement IAssertsAllPropertiesOf<TObject> only once",
             "Object Assertions",
             DiagnosticSeverity.Error,
             true);
@@ -41,7 +41,7 @@ namespace ObjectAssertions
         public static readonly DiagnosticDescriptor UnknownTypeName = new(
             "OBJASS0005",
             "Unsupported type",
-            "Argument of " + typeof(IAssertsAllPropertiesOf<>).Name + " in not regular type.",
+            "Argument of IAssertsAllPropertiesOf<TObject> is not a regular type",
             "Object Assertions",
             DiagnosticSeverity.Error,
             true);

@@ -16,8 +16,8 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
     - name: Create the package
       run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
     - name: Create the package

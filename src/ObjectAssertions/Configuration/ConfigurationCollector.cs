@@ -29,13 +29,22 @@ namespace ObjectAssertions.Configuration
 
         private ObjectAssertionsConfiguration? Collect()
         {
-            var assertedType = (INamedTypeSymbol)_assertAllPropertiesOfInterface.TypeArguments[0];
+            if (_assertAllPropertiesOfInterface.TypeArguments[0] is not INamedTypeSymbol assertedType)
+            {
+                return null;
+            }
 
-            var publicMembers = assertedType.GetBaseTypesAndThis().SelectMany(n => n.GetMembers()).Where(n => n.DeclaredAccessibility == Accessibility.Public);
+            if (assertedType.TypeKind == TypeKind.Error)
+            {
+                // This doesn't really matter in editor, but we want tests to behave nicely
+                return null;
+            }
 
-            var properties = publicMembers.OfType<IPropertySymbol>();
+            var assertedTypePublicProperties = assertedType.GetBaseTypesAndThis().SelectMany(n => n.GetMembers()).Where(n => n.DeclaredAccessibility == Accessibility.Public);
 
-            var fields = publicMembers.OfType<IFieldSymbol>()
+            var properties = assertedTypePublicProperties.OfType<IPropertySymbol>();
+
+            var fields = assertedTypePublicProperties.OfType<IFieldSymbol>()
                 .Where(n => n.AssociatedSymbol == null && n.DeclaredAccessibility == Accessibility.Public)
                 .ToList();
 

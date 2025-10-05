@@ -349,3 +349,5 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 /samples/ObjectAssertions.Sample/GeneratedFiles/
+/.idea/
+/tests/ObjectAssertions.Generator.Tests/GeneratedFiles/

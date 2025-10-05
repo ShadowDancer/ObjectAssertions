@@ -61,7 +61,7 @@ namespace ObjectAssertions.Generator
 
         private ObjectAssertionsConfiguration? IsAssertionsClass(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel)
         {
-            var markerInterface = semanticModel.Compilation.GetTypeByMetadataName(typeof(IAssertsAllPropertiesOf<>).FullName)?.ConstructUnboundGenericType();
+            var markerInterface = semanticModel.Compilation.GetTypeByMetadataName("ObjectAssertions.Abstractions.IAssertsAllPropertiesOf`1")?.ConstructUnboundGenericType();
             var assertAllPropertiesOfInterfaces = classDeclaration.BaseList?.Types.Select(baseType =>
             {
                 if (baseType is not SimpleBaseTypeSyntax simpleBaseTypeSyntax)
