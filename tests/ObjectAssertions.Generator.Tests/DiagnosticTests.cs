@@ -96,7 +96,7 @@ namespace TestNamespace
 
             var compilation = CSharpCompilation.Create(
                 "TestCompilation",
-                new[] { syntaxTree },
+                [syntaxTree],
                 references,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
