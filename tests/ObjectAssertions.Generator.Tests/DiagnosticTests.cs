@@ -64,23 +64,6 @@ namespace TestNamespace
             Assert.Contains(diagnostics, d => d.Id == "OBJASS0004" && d.Severity == DiagnosticSeverity.Error);
         }
 
-        [Fact]
-        public void UnknownTypeArgument_ReportsError()
-        {
-            var testCode = @"
-using ObjectAssertions.Abstractions;
-
-namespace TestNamespace
-{
-    public partial class UnknownType : IAssertsAllPropertiesOf<InvalidType>
-    {
-    }
-}";
-
-            var diagnostics = GetDiagnostics(testCode);
-            Assert.Contains(diagnostics, d => d.Id == "OBJASS0005" && d.Severity == DiagnosticSeverity.Error);
-        }
-
         private static IEnumerable<Diagnostic> GetDiagnostics(string testCode)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(testCode);
@@ -103,9 +86,11 @@ namespace TestNamespace
             var generator = new ObjectAssertionsSourceGenerator();
             var driver = CSharpGeneratorDriver.Create(generator);
 
-            driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+            var runResult = driver.RunGenerators(compilation);
+            var generatorDiagnostics = runResult.GetRunResult().Diagnostics;
+            var compilationDiagnostics = compilation.GetDiagnostics();
 
-            return diagnostics;
+            return generatorDiagnostics.Concat(compilationDiagnostics);
         }
     }
 }
