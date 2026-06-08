@@ -9,15 +9,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: global.json
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --no-restore --verbosity detailed
     - name: Create the package
       run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
     - name: Create the package
