@@ -35,4 +35,26 @@ namespace ObjectAssertions.Generator.Tests
     public partial class TestClassWithObsoleteAssertions : IAssertsAllPropertiesOf<TestClassWithObsolete>
     {
     }
+
+    public record TestRecord
+    {
+        public int IntProperty { get; set; } = 42;
+        public string StringProperty { get; set; } = "test";
+        public bool BoolProperty { get; set; } = true;
+        public double DoubleProperty { get; set; } = 3.14;
+    }
+
+    public partial record TestRecordAssertions : IAssertsAllPropertiesOf<TestRecord>
+    {
+    }
+
+    public record NestedTestRecord
+    {
+        public string Name { get; set; } = "nested";
+        public TestRecord Nested { get; set; } = new();
+    }
+
+    public partial record NestedTestRecordAssertions : IAssertsAllPropertiesOf<NestedTestRecord>
+    {
+    }
 }

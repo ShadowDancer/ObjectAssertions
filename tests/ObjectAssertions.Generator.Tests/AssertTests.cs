@@ -41,4 +41,40 @@ public class AssertTests
 
         Assert.Throws<InvalidOperationException>(() => assertions.Assert());
     }
+
+    [Fact]
+    public void RecordAssert_ExecutesAssertionsInCorrectOrder()
+    {
+        var executionOrder = new List<string>();
+        var testObject = new TestRecord();
+
+        var assertions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => executionOrder.Add("IntProperty"),
+            StringProperty = s => executionOrder.Add("StringProperty"),
+            BoolProperty = b => executionOrder.Add("BoolProperty"),
+            DoubleProperty = d => executionOrder.Add("DoubleProperty")
+        };
+
+        assertions.Assert();
+
+        var expectedOrder = new[] { "IntProperty", "StringProperty", "BoolProperty", "DoubleProperty" };
+        Assert.Equal(expectedOrder, executionOrder);
+    }
+
+    [Fact]
+    public void RecordAssert_PropagatesExceptionFromAssertion()
+    {
+        var testObject = new TestRecord();
+
+        var assertions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => throw new InvalidOperationException("Test exception"),
+            StringProperty = s => { },
+            BoolProperty = b => { },
+            DoubleProperty = d => { }
+        };
+
+        Assert.Throws<InvalidOperationException>(() => assertions.Assert());
+    }
 }

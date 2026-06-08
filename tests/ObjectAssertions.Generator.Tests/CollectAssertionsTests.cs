@@ -114,4 +114,85 @@ public class CollectAssertionsTests
         Assert.NotNull(actions);
         Assert.All(actions, Assert.NotNull);
     }
+
+    [Fact]
+    public void RecordCollectAssertions_BasicScenario()
+    {
+        var executedAssertions = new List<string>();
+        var testObject = new TestRecord();
+
+        var actions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => executedAssertions.Add("IntProperty"),
+            StringProperty = s => executedAssertions.Add("StringProperty"),
+            BoolProperty = b => executedAssertions.Add("BoolProperty"),
+            DoubleProperty = d => executedAssertions.Add("DoubleProperty")
+        }.CollectAssertions();
+
+        foreach (var action in actions)
+        {
+            action();
+        }
+
+        var expected = new[] { "IntProperty", "StringProperty", "BoolProperty", "DoubleProperty" };
+        Assert.Equal(expected.Length, executedAssertions.Count);
+        Assert.Equal(expected, executedAssertions);
+    }
+
+    [Fact]
+    public void RecordCollectAssertions_ReturnsCorrectActionCount()
+    {
+        var testObject = new TestRecord();
+
+        var actions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => { },
+            StringProperty = s => { },
+            BoolProperty = b => { },
+            DoubleProperty = d => { }
+        }.CollectAssertions();
+
+        Assert.Equal(4, actions.Length);
+        Assert.All(actions, action => Assert.NotNull(action));
+    }
+
+    [Fact]
+    public void RecordCollectAssertions_ActionsExecuteInCorrectOrder()
+    {
+        var executionOrder = new List<string>();
+        var testObject = new TestRecord();
+
+        var actions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => executionOrder.Add("IntProperty"),
+            StringProperty = s => executionOrder.Add("StringProperty"),
+            BoolProperty = b => executionOrder.Add("BoolProperty"),
+            DoubleProperty = d => executionOrder.Add("DoubleProperty")
+        }.CollectAssertions();
+
+        foreach (var action in actions)
+        {
+            action();
+        }
+
+        var expectedOrder = new[] { "IntProperty", "StringProperty", "BoolProperty", "DoubleProperty" };
+        Assert.Equal(expectedOrder, executionOrder);
+    }
+
+    [Fact]
+    public void RecordCollectAssertions_ReturnsNonNullActions()
+    {
+        var testObject = new TestRecord();
+
+        var actions = new TestRecordAssertions(testObject)
+        {
+            IntProperty = i => { },
+            StringProperty = s => { },
+            BoolProperty = b => { },
+            DoubleProperty = d => { }
+        }.CollectAssertions();
+
+        Assert.NotNull(actions);
+        Assert.All(actions, Assert.NotNull);
+    }
 }

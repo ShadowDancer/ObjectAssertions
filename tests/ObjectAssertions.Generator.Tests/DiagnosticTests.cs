@@ -64,6 +64,60 @@ namespace TestNamespace
             Assert.Contains(diagnostics, d => d.Id == "OBJASS0004" && d.Severity == DiagnosticSeverity.Error);
         }
 
+        [Fact]
+        public void NonPartialAssertionsRecord_ReportsError()
+        {
+            var testCode = @"
+using ObjectAssertions.Abstractions;
+
+namespace TestNamespace
+{
+    public record NonPartialRecordAssertions(string Object) : IAssertsAllPropertiesOf<string>
+    {
+    }
+}";
+
+            var diagnostics = GetDiagnostics(testCode);
+            Assert.Contains(diagnostics, d => d.Id == "OBJASS0002" && d.Severity == DiagnosticSeverity.Error);
+        }
+
+        [Fact]
+        public void AssertionsRecordInNonPartialContainingClass_ReportsError()
+        {
+            var testCode = @"
+using ObjectAssertions.Abstractions;
+
+namespace TestNamespace
+{
+    public class NonPartialContainer
+    {
+        public partial record NestedRecordAssertions(string Object) : IAssertsAllPropertiesOf<string>
+        {
+        }
+    }
+}";
+
+            var diagnostics = GetDiagnostics(testCode);
+            Assert.Contains(diagnostics, d => d.Id == "OBJASS0003" && d.Severity == DiagnosticSeverity.Error);
+        }
+
+        [Fact]
+        public void MultipleInterfaceDeclarationsRecord_ReportsError()
+        {
+            var testCode = @"
+using ObjectAssertions.Abstractions;
+
+namespace TestNamespace
+{
+    public partial record MultipleInterfacesRecord(string Object) : IAssertsAllPropertiesOf<string>, IAssertsAllPropertiesOf<int>
+    {
+    }
+}";
+
+            var diagnostics = GetDiagnostics(testCode);
+            Assert.Contains(diagnostics, d => d.Id == "OBJASS0004" && d.Severity == DiagnosticSeverity.Error);
+        }
+
         private static IEnumerable<Diagnostic> GetDiagnostics(string testCode)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(testCode);
