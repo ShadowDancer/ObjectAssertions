@@ -47,7 +47,7 @@ namespace TestNamespace
     }
 }";
             var expectedDiagnosticStartsAt = testCode.IndexOf("var assertions = new", StringComparison.Ordinal);
-            Assert.NotEqual(expectedDiagnosticStartsAt, -1);
+            Assert.NotEqual(-1, expectedDiagnosticStartsAt);
 
             var diagnostics = GetCompilationDiagnostics(testCode);
             Assert.Single(diagnostics, d => d.Id == "CS0612" && d.Severity == DiagnosticSeverity.Warning);
@@ -90,7 +90,7 @@ namespace TestNamespace
     }
 }";
             var expectedDiagnosticStartsAt = testCode.IndexOf("var assertions = new", StringComparison.Ordinal);
-            Assert.NotEqual(expectedDiagnosticStartsAt, -1);
+            Assert.NotEqual(-1, expectedDiagnosticStartsAt);
 
             var diagnostics = GetCompilationDiagnostics(testCode);
             Assert.Equal("CS0618", diagnostics[0].Id);
@@ -132,7 +132,7 @@ namespace TestNamespace
     }
 }";
             var expectedDiagnosticStartsAt = testCode.IndexOf("var assertions = new", StringComparison.Ordinal);
-            Assert.NotEqual(expectedDiagnosticStartsAt, -1);
+            Assert.NotEqual(-1, expectedDiagnosticStartsAt);
 
             var diagnostics = GetCompilationDiagnostics(testCode);
             
@@ -186,7 +186,7 @@ namespace TestNamespace
     }
 }";
             var expectedDiagnosticStartsAt = testCode.IndexOf("var assertions = new", StringComparison.Ordinal);
-            Assert.NotEqual(expectedDiagnosticStartsAt, -1);
+            Assert.NotEqual(-1, expectedDiagnosticStartsAt);
             
             var diagnostics = GetCompilationDiagnostics(testCode);
             
