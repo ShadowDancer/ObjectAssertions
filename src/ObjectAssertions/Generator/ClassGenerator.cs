@@ -16,6 +16,7 @@ namespace ObjectAssertions.Generator
         private SemanticModel _semanticModel;
         private ObjectAssertionsConfiguration _configuration;
         private INamedTypeSymbol _typeSymbol;
+        private TypeDeclarationSyntax _typeDeclaration;
 
         public static string GenerateSource(TypeDeclarationSyntax typeDeclaration, SemanticModel semanticModel, ObjectAssertionsConfiguration configuration)
         {
@@ -29,6 +30,7 @@ namespace ObjectAssertions.Generator
         {
             _semanticModel = semanticModel;
             _configuration = configuration;
+            _typeDeclaration = typeDeclaration;
             _typeSymbol = semanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol
                           ?? throw new ArgumentException(nameof(typeDeclaration));
         }
@@ -53,21 +55,30 @@ namespace ObjectAssertions.Generator
                     containingTypeScopes.Add(sourceWriter.Scope());
                 }
 
-                var classDeclaration = SyntaxFactory.ClassDeclaration(_typeSymbol.Name);
-                classDeclaration = classDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
+                bool isRecord = IsRecordDeclaration(_typeDeclaration);
+                TypeDeclarationSyntax typeDeclaration = isRecord
+                    ? SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), _typeSymbol.Name)
+                        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword))
+                        .WithOpenBraceToken(SyntaxFactory.Token(SyntaxKind.OpenBraceToken))
+                    : SyntaxFactory.ClassDeclaration(_typeSymbol.Name)
+                        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
 
-                classDeclaration = AddObsoleteAttributeIfNeeded(classDeclaration);
+                typeDeclaration = AddObsoleteAttributeIfNeeded(typeDeclaration);
 
                 ConstructorDeclarationSyntax constructor = MemberGenerator.GenerateConstructor(_semanticModel, _configuration.AssertionClassName, _configuration.AssertedType, _configuration.AssertionFieldName);
-                classDeclaration = classDeclaration
+                typeDeclaration = typeDeclaration
                                     .AddMembers(constructor)
                                     .AddMembers(GenerateFields())
                                     .AddMembers(GenerateAssertMethod())
-                                    .AddMembers(GenerateCollectAssertionsMethod())
-                ;
+                                    .AddMembers(GenerateCollectAssertionsMethod());
 
-                classDeclaration = classDeclaration.NormalizeWhitespace();
-                classDeclaration.WriteTo(writer);
+                if (isRecord)
+                {
+                    typeDeclaration = typeDeclaration.WithCloseBraceToken(SyntaxFactory.Token(SyntaxKind.CloseBraceToken));
+                }
+
+                typeDeclaration = typeDeclaration.NormalizeWhitespace();
+                typeDeclaration.WriteTo(writer);
                 writer.WriteLine();
 
                 foreach (var scope in containingTypeScopes)
@@ -145,7 +156,16 @@ namespace ObjectAssertions.Generator
             return members.ToArray();
         }
 
-        private ClassDeclarationSyntax AddObsoleteAttributeIfNeeded(ClassDeclarationSyntax classDeclaration)
+        /// <summary>
+        /// Detects whether the provided TypeDeclarationSyntax is a record or class declaration.
+        /// </summary>
+        private bool IsRecordDeclaration(TypeDeclarationSyntax typeDeclaration)
+        {
+            return typeDeclaration.IsKind(SyntaxKind.RecordDeclaration) || 
+                   typeDeclaration.IsKind(SyntaxKind.RecordStructDeclaration);
+        }
+
+        private TypeDeclarationSyntax AddObsoleteAttributeIfNeeded(TypeDeclarationSyntax typeDeclaration)
         {
             var obsoleteMember = _configuration.Members.FirstOrDefault(m => m.ObsoleteInfo != null);
             if (obsoleteMember != null)
@@ -153,11 +173,11 @@ namespace ObjectAssertions.Generator
                 string message = $"One of the asserted {obsoleteMember.Symbol.Name}'s members is obsolete";
                 
                 var obsoleteAttribute = ObsoleteMemberHandler.GenerateObsoleteAttribute(message);
-                return classDeclaration.AddAttributeLists(
+                return typeDeclaration.AddAttributeLists(
                     SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute)));
             }
 
-            return classDeclaration;
+            return typeDeclaration;
         }
     }
 
