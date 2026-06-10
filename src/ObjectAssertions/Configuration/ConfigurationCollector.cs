@@ -8,23 +8,21 @@ namespace ObjectAssertions.Configuration
 {
     internal class ConfigurationCollector
     {
-        private GeneratorExecutionContext _context;
         private SemanticModel _semanticModel;
         private TypeDeclarationSyntax _assertionClassDeclaration;
         private readonly INamedTypeSymbol _assertAllPropertiesOfInterface;
 
-        public ConfigurationCollector(GeneratorExecutionContext context, SemanticModel semanticModel, TypeDeclarationSyntax assertionClassDeclaration, INamedTypeSymbol assertAllPropertiesOfInterface)
+        public ConfigurationCollector(SemanticModel semanticModel, TypeDeclarationSyntax assertionClassDeclaration, INamedTypeSymbol assertAllPropertiesOfInterface)
         {
-            _context = context;
             _semanticModel = semanticModel;
             _assertionClassDeclaration = assertionClassDeclaration;
             _assertAllPropertiesOfInterface = assertAllPropertiesOfInterface;
         }
 
-        public static ObjectAssertionsConfiguration? Collect(GeneratorExecutionContext context, SemanticModel semanticModel,
-    TypeDeclarationSyntax assertionClassDeclaration, INamedTypeSymbol assertAllPropertiesOfInterface)
+        public static ObjectAssertionsConfiguration? Collect(SemanticModel semanticModel,
+            TypeDeclarationSyntax assertionClassDeclaration, INamedTypeSymbol assertAllPropertiesOfInterface)
         {
-            return new ConfigurationCollector(context, semanticModel, assertionClassDeclaration, assertAllPropertiesOfInterface).Collect();
+            return new ConfigurationCollector(semanticModel, assertionClassDeclaration, assertAllPropertiesOfInterface).Collect();
         }
 
         private ObjectAssertionsConfiguration? Collect()
