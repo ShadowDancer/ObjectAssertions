@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputPath>bin\roslyn4.12\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\roslyn4.12\$(Configuration)\</IntermediateOutputPath>
+    <RoslynApiVersion>4.12.0</RoslynApiVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <Import Project="ObjectAssertions.Build.targets" />
+
+</Project>

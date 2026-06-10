@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputPath>bin\pack\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\pack\$(Configuration)\</IntermediateOutputPath>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Version>0.0.0-preview1</Version>
+    <PackageId>ObjectAssertions</PackageId>
+    <Authors>Przemysław Onak</Authors>
+    <PackageProjectUrl>https://github.com/ShadowDancer/ObjectAssertions</PackageProjectUrl>
+    <Description>
+      Contains Source Generator which automatically generates classes that ensure all properties of the object are asserted.
+      This is developement only dependedency, which is not compiled into your program.
+    </Description>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>Object Assertions</Title>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <Target Name="BuildRoslynVariants" BeforeTargets="GenerateNuspec">
+    <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)ObjectAssertions.Roslyn4.4.csproj&quot; -c $(Configuration)" />
+    <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)ObjectAssertions.Roslyn4.8.csproj&quot; -c $(Configuration)" />
+    <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)ObjectAssertions.Roslyn4.12.csproj&quot; -c $(Configuration)" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    <None Include="build\ObjectAssertions.targets" Pack="true" PackagePath="build" />
+
+    <None Include="$(MSBuildThisFileDirectory)bin\roslyn4.4\$(Configuration)\netstandard2.0\ObjectAssertions.dll"
+          Pack="true" PackagePath="analyzers/dotnet/roslyn4.4/cs" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)bin\roslyn4.8\$(Configuration)\netstandard2.0\ObjectAssertions.dll"
+          Pack="true" PackagePath="analyzers/dotnet/roslyn4.8/cs" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)bin\roslyn4.12\$(Configuration)\netstandard2.0\ObjectAssertions.dll"
+          Pack="true" PackagePath="analyzers/dotnet/roslyn4.12/cs" Visible="false" />
+  </ItemGroup>
+
+</Project>

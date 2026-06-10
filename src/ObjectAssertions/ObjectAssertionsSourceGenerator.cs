@@ -1,21 +1,44 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ObjectAssertions.Generator;
+using ObjectAssertions.Generator.Models;
 
 namespace ObjectAssertions
 {
     [Generator]
-    public class ObjectAssertionsSourceGenerator : ISourceGenerator
+    public class ObjectAssertionsSourceGenerator : IIncrementalGenerator
     {
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-#if DEBUG
-            System.Diagnostics.Debugger.Launch();
-#endif
-            new GenerationOrchestrator(context).Generate();
-        }
+            var candidates = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: static (node, _) => AssertionSyntaxHelper.IsCandidate(node),
+                    transform: static (ctx, _) => (TypeDeclarationSyntax)ctx.Node)
+                .Combine(context.CompilationProvider)
+                .Select(static (pair, cancellationToken) =>
+                {
+                    var typeDeclaration = pair.Left;
+                    var compilation = pair.Right;
+                    var semanticModel = compilation.GetSemanticModel(typeDeclaration.SyntaxTree);
+                    return AssertionAnalyzer.TryAnalyze(typeDeclaration, semanticModel, cancellationToken);
+                })
+                .Where(static result => result is not null);
 
-        public void Initialize(GeneratorInitializationContext context)
-        {
+            context.RegisterSourceOutput(candidates, static (sourceProductionContext, result) =>
+            {
+#if DEBUG
+                System.Diagnostics.Debugger.Launch();
+#endif
+                foreach (var diagnostic in result!.Value.Diagnostics)
+                {
+                    sourceProductionContext.ReportDiagnostic(diagnostic);
+                }
+
+                if (result.Value.Source is not null)
+                {
+                    sourceProductionContext.AddSource($"{result.Value.HintName}.g.cs", result.Value.Source);
+                }
+            });
         }
     }
 }

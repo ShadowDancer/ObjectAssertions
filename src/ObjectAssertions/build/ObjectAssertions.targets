@@ -1,0 +1,23 @@
+<Project>
+
+  <Target Name="_ObjectAssertionsGatherAnalyzers">
+    <ItemGroup>
+      <_ObjectAssertionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'ObjectAssertions'" />
+    </ItemGroup>
+  </Target>
+
+  <!-- SDK versions before .NET 6 load every roslyn{version} analyzer; keep only the oldest. -->
+  <Target Name="_ObjectAssertionsAnalyzerMultiTargeting"
+          Condition="'$(SupportsRoslynComponentVersioning)' != 'true'"
+          AfterTargets="ResolvePackageDependenciesForBuild;ResolveNuGetPackageAssets"
+          DependsOnTargets="_ObjectAssertionsGatherAnalyzers">
+
+    <ItemGroup>
+      <Analyzer Remove="@(_ObjectAssertionsAnalyzer)"
+                Condition="$([System.String]::Copy('%(_ObjectAssertionsAnalyzer.Identity)').IndexOf('roslyn4.12')) &gt;= 0" />
+      <Analyzer Remove="@(_ObjectAssertionsAnalyzer)"
+                Condition="$([System.String]::Copy('%(_ObjectAssertionsAnalyzer.Identity)').IndexOf('roslyn4.8')) &gt;= 0" />
+    </ItemGroup>
+  </Target>
+
+</Project>

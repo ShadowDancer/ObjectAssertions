@@ -34,6 +34,5 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\ObjectAssertions.Abstractions\ObjectAssertions.Abstractions.csproj" />
-		<ProjectReference Include="..\..\src\ObjectAssertions\ObjectAssertions.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 </Project>

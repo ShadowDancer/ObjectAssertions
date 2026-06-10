@@ -18,13 +18,13 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release -p:Version=$RELEASE_VERSION --no-restore
     - name: Create the package
-      run: dotnet pack --configuration Release -p:Version=$RELEASE_VERSION --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
+      run: dotnet pack --configuration Release -p:Version=$RELEASE_VERSION --no-restore src/ObjectAssertions/ObjectAssertions.Pack.csproj
     - name: Create the package
       run: dotnet pack --configuration Release -p:Version=$RELEASE_VERSION --no-build --no-restore src/ObjectAssertions.Abstractions/ObjectAssertions.Abstractions.csproj
     - uses: actions/upload-artifact@v4
       with:
         name: ObjectAssertions
         path: |
-          src/ObjectAssertions/bin/Release/*.nupkg
+          src/ObjectAssertions/bin/pack/Release/*.nupkg
           src/ObjectAssertions.Abstractions/bin/Release/*.nupkg
         if-no-files-found: error
