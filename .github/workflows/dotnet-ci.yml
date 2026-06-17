@@ -21,6 +21,6 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --no-restore --verbosity detailed
     - name: Create the package
-      run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions/ObjectAssertions.csproj
+      run: dotnet pack --configuration Release --no-restore src/ObjectAssertions/ObjectAssertions.Pack.csproj
     - name: Create the package
       run: dotnet pack --configuration Release --no-build --no-restore src/ObjectAssertions.Abstractions/ObjectAssertions.Abstractions.csproj
